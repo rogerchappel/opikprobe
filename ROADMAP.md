@@ -1,38 +1,20 @@
 # Roadmap
 
-This roadmap describes intended direction, not a binding delivery promise.
-Review it regularly and update it as the project learns from users,
-contributors, and implementation constraints.
+## 0.1.x
 
-## Now
+- Stabilize fixture contract from early user feedback.
+- Add JSON Schema output for fixtures.
+- Add more MCP fixture examples.
 
-- Define the smallest useful project scope.
-- Keep repository setup, documentation, and verification easy for contributors
-  to follow.
-- Ship small, reviewable improvements.
+## 0.2.x
 
-## Next
+- Optional importers for common trace/eval export shapes.
+- Golden report snapshots for CI integrations.
+- Machine-readable remediation hints.
 
-- Add the next capabilities that directly support the project's primary users.
-- Improve tests, docs, and examples around the most used workflows.
-- Reduce setup friction discovered during early use.
+## Principles
 
-## Later
-
-- Consider larger features after the core workflow is stable.
-- Add automation only where it removes repeated maintainer work.
-- Revisit packaging, deployment, or integration options based on real demand.
-
-## Not Planned
-
-- Unrelated platform rewrites without a clear migration path.
-- Mandatory dependencies on a single ecosystem unless the project requires it.
-- Public release dates before maintainers are ready to commit to them.
-
-## Roadmap Review
-
-Before each major or meaningful minor release:
-
-- Move completed user-visible work into `CHANGELOG.md`.
-- Remove stale commitments.
-- Promote only the next reviewable set of work into `Now`.
+- Local-first by default.
+- Deterministic output.
+- Explicit user-controlled inputs and outputs.
+- No hidden telemetry or network behavior.
