@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "name": "failing deterministic MCP probe",
+  "description": "A fixture with intentional violations for test and demo coverage.",
+  "tools": [
+    {
+      "id": "tool-bad-1",
+      "name": "mcp.lookup",
+      "input": { "query": "missing trace" },
+      "status": "ok",
+      "startedAt": "2026-05-10T00:00:00.000Z",
+      "endedAt": "2026-05-10T00:00:01.250Z",
+      "traceId": "trace-missing",
+      "spanId": "span-tool-bad-1"
+    }
+  ],
+  "traces": [
+    {
+      "traceId": "trace-slow-1",
+      "spanId": "span-slow-1",
+      "name": "agent.slow_step",
+      "kind": "agent",
+      "startTime": "2026-05-10T00:00:00.000Z",
+      "endTime": "2026-05-10T00:00:02.000Z",
+      "status": "ok",
+      "attributes": { "opikprobe.fixture": true }
+    }
+  ],
+  "evals": [
+    {
+      "id": "eval-low-1",
+      "traceId": "trace-slow-1",
+      "metric": "answer_quality",
+      "score": 0.2,
+      "threshold": 0.8,
+      "passed": false,
+      "comment": "Intentional failure."
+    }
+  ],
+  "expectations": {
+    "minEvalScore": 0.8,
+    "requireTraceForEveryTool": true,
+    "requireEvalForEveryTrace": true,
+    "maxDurationMs": 500
+  }
+}
