@@ -19,20 +19,20 @@ npm run build
 
 ```bash
 npm run build
-node dist/cli.js inspect fixtures/pass --output .tmp/pass
+node dist/src/cli.js inspect fixtures/pass --output .tmp/pass
 cat .tmp/pass/opikprobe-report.md
 ```
 
 JSON output:
 
 ```bash
-node dist/cli.js inspect fixtures/pass --format json
+node dist/src/cli.js inspect fixtures/pass --format json
 ```
 
 Expected failure demo:
 
 ```bash
-node dist/cli.js inspect fixtures/fail --fail-on-violation=false
+node dist/src/cli.js inspect fixtures/fail --fail-on-violation=false
 ```
 
 ## Fixture shape

@@ -27,4 +27,4 @@
 - `npm run build`
 - `npm run smoke`
 - `bash scripts/validate.sh`
-- `node dist/cli.js inspect fixtures/pass --output .tmp/manual-smoke`
+- `node dist/src/cli.js inspect fixtures/pass --output .tmp/manual-smoke`
