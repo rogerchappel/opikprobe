@@ -22,7 +22,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && chmod +x dist/src/cli.js && mkdir -p dist && cp dist/src/cli.js dist/cli.js",
     "check": "tsc -p tsconfig.json --noEmit",
     "test": "npm run build && node --test dist/tests/*.test.js",
     "smoke": "npm run build && node dist/cli.js inspect fixtures/pass --output .tmp/smoke && node dist/cli.js inspect fixtures/fail --format json --output .tmp/fail --fail-on-violation=false",
