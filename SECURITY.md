@@ -1,58 +1,26 @@
-# Security Policy
+# Security policy
 
-## Supported Versions
+opikprobe is designed to be local-first:
 
-Replace this section with the supported versions for `opikprobe`.
+- It reads explicit local fixture paths.
+- It writes reports only when `--output` is provided.
+- It does not perform network calls.
+- It does not discover credentials or environment secrets.
+- It does not upload telemetry.
 
-Example:
+## Reporting a vulnerability
 
-```md
-| Version | Supported |
-| --- | --- |
-| .x | Yes |
-| < .0 | No |
-```
+Please open a private GitHub security advisory or contact the maintainer with:
 
-If the project does not publish versioned releases yet, say that clearly.
+- affected version or commit,
+- reproduction steps,
+- expected and actual behavior,
+- whether local files or credentials could be exposed.
 
-## Reporting a Vulnerability
+## Supported versions
 
-Please do not report suspected vulnerabilities in public issues, pull requests, or discussions.
+The current `main` branch and latest tagged release receive security fixes.
 
-Ask maintainers for the private security reporting path before sharing details.
+## Threat model
 
-If no private reporting path exists yet, ask maintainers through public project channels for a private reporting path. Do not include exploit details, secrets, personal data, or sensitive technical details in public messages.
-
-## What to Include
-
-When a private reporting path is available, include:
-
-- A clear description of the issue.
-- Affected versions, files, packages, workflows, or configuration.
-- Steps to reproduce, proof of concept, or attack scenario when safe to share.
-- Potential impact.
-- Suggested mitigation, if known.
-
-## Response Expectations
-
-Maintainers review good-faith reports as capacity allows.
-
-Do not imply paid support, guaranteed response times, guaranteed fixes, or service-level agreements unless `opikprobe` explicitly provides them.
-
-## Scope
-
-In scope:
-
-- Vulnerabilities in opikprobe.
-- Insecure default configuration shipped by this project.
-- CI, release, or dependency guidance maintained by this project.
-
-Out of scope:
-
-- General support requests.
-- Requests for guaranteed maintenance timelines.
-- Issues in unrelated downstream projects.
-
-## Disclosure
-
-Coordinate disclosure with maintainers before publishing vulnerability details.
+Fixture JSON is untrusted input. opikprobe should parse it as data, avoid executing fixture content, and keep output paths explicit and reviewable.
