@@ -15,7 +15,7 @@
     }
   },
   "files": [
-    "dist",
+    "dist/src",
     "fixtures",
     "examples",
     "README.md",
