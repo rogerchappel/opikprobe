@@ -17,7 +17,6 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
       return 0;
     }
     const report = await inspectFixture({ inputPath: options.inputPath!, output: options.output, format: options.format, failOnViolation: options.failOnViolation });
-    if (!options.output) process.stdout.write(options.format === "json" ? `${JSON.stringify(report, null, 2)}\n` : "");
     return !report.ok && options.failOnViolation ? 1 : 0;
   } catch (error) {
     process.stderr.write(`opikprobe: ${asErrorMessage(error)}\n`);
