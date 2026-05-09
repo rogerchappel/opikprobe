@@ -45,5 +45,13 @@
   },
   "engines": {
     "node": ">=20.11"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rogerchappel/opikprobe.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rogerchappel/opikprobe/issues"
+  },
+  "homepage": "https://github.com/rogerchappel/opikprobe#readme"
 }
