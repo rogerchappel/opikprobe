@@ -25,7 +25,7 @@ function coerceFixture(value: unknown, filePath: string): ProbeFixture {
   for (const field of ["tools", "traces", "evals"] as const) {
     if (!Array.isArray(value[field])) throw new OpikProbeError(`Fixture ${filePath} field ${field} must be an array.`, "FIXTURE_SHAPE_INVALID");
   }
-  return value as ProbeFixture;
+  return value as unknown as ProbeFixture;
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {

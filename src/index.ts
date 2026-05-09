@@ -15,7 +15,6 @@ export async function inspectFixture(options: InspectOptions): Promise<ProbeRepo
   const filePath = await findFixtureFile(options.inputPath);
   const fixture = await loadFixture(filePath);
   const report = createReport(fixture, validateFixture(fixture), filePath);
-  const rendered = await writeReport(report, options.output, options.format ?? "markdown");
-  if (rendered) process.stdout.write(rendered);
+  await writeReport(report, options.output, options.format ?? "markdown");
   return report;
 }
