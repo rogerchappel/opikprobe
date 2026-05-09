@@ -1,0 +1,22 @@
+{
+  "project": "opikprobe",
+  "mode": "local-first",
+  "network": "none",
+  "commands": {
+    "check": "npm run check",
+    "test": "npm test",
+    "build": "npm run build",
+    "smoke": "npm run smoke",
+    "validate": "bash scripts/validate.sh"
+  },
+  "artifacts": [
+    "opikprobe-report.md",
+    "opikprobe-report.json"
+  ],
+  "slices": [
+    "fixture-contract",
+    "probe-engine",
+    "cli-ux",
+    "docs-and-safety"
+  ]
+}
