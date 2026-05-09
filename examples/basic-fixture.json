@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "name": "example minimal probe",
+  "tools": [
+    {
+      "id": "tool-example-1",
+      "name": "mcp.example",
+      "input": { "value": 42 },
+      "output": { "value": 42 },
+      "status": "ok",
+      "startedAt": "2026-05-10T00:00:00.000Z",
+      "endedAt": "2026-05-10T00:00:00.010Z",
+      "traceId": "trace-example-1",
+      "spanId": "span-example-1"
+    }
+  ],
+  "traces": [
+    {
+      "traceId": "trace-example-1",
+      "spanId": "span-example-1",
+      "name": "mcp.example",
+      "kind": "tool",
+      "startTime": "2026-05-10T00:00:00.000Z",
+      "endTime": "2026-05-10T00:00:00.010Z",
+      "status": "ok",
+      "attributes": { "mcp.tool.name": "mcp.example" }
+    }
+  ],
+  "evals": [
+    {
+      "id": "eval-example-1",
+      "traceId": "trace-example-1",
+      "metric": "round_trip",
+      "score": 1,
+      "passed": true
+    }
+  ]
+}
