@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "name": "passing deterministic MCP probe",
+  "description": "A minimal healthy fixture for validating trace and eval plumbing.",
+  "tools": [
+    {
+      "id": "tool-1",
+      "name": "mcp.echo",
+      "input": { "message": "hello" },
+      "output": { "message": "hello" },
+      "status": "ok",
+      "startedAt": "2026-05-10T00:00:00.000Z",
+      "endedAt": "2026-05-10T00:00:00.050Z",
+      "traceId": "trace-pass-1",
+      "spanId": "span-tool-1",
+      "metadata": { "fixture": true }
+    }
+  ],
+  "traces": [
+    {
+      "traceId": "trace-pass-1",
+      "spanId": "span-tool-1",
+      "name": "mcp.echo",
+      "kind": "tool",
+      "startTime": "2026-05-10T00:00:00.000Z",
+      "endTime": "2026-05-10T00:00:00.050Z",
+      "status": "ok",
+      "attributes": { "mcp.tool.name": "mcp.echo", "opikprobe.fixture": true }
+    }
+  ],
+  "evals": [
+    {
+      "id": "eval-1",
+      "traceId": "trace-pass-1",
+      "metric": "echo_exact_match",
+      "score": 1,
+      "threshold": 0.99,
+      "passed": true,
+      "comment": "Echo output matched input."
+    }
+  ],
+  "expectations": {
+    "minEvalScore": 0.8,
+    "requireTraceForEveryTool": true,
+    "requireEvalForEveryTrace": true,
+    "maxDurationMs": 500
+  }
+}
