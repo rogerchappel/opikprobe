@@ -27,7 +27,8 @@
     "test": "npm run build && node --test dist/tests/*.test.js",
     "smoke": "npm run build && node dist/src/cli.js inspect fixtures/pass --output .tmp/smoke && node dist/src/cli.js inspect fixtures/fail --format json --output .tmp/fail --fail-on-violation=false",
     "package:smoke": "npm pack --dry-run",
-    "release:check": "npm run check && npm test && npm run smoke && npm run package:smoke"
+    "release:check": "npm run check && npm test && npm run smoke && npm run package:smoke",
+    "release:readiness": "node scripts/validate-release-readiness.mjs"
   },
   "keywords": [
     "mcp",
