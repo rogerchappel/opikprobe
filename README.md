@@ -62,6 +62,16 @@ import { inspectFixture } from "opikprobe";
 const report = await inspectFixture({ inputPath: "fixtures/pass", format: "json" });
 console.log(report.ok);
 ```
+## CLI Help Smoke
+
+Confirm the packaged command starts and prints its help text before relying on a release tarball or downstream automation:
+
+```bash
+npm run build
+node ./dist/src/cli.js --help
+```
+
+The command should exit successfully, print the available options, and avoid reading project files or contacting external services.
 
 ## Safety
 
