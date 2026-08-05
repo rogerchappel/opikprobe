@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "name": "semantic validation failures",
+  "tools": [
+    {
+      "id": "tool-reversed",
+      "name": "lookup",
+      "input": {},
+      "status": "ok",
+      "startedAt": "2026-05-10T00:00:01.000Z",
+      "endedAt": "2026-05-10T00:00:00.000Z",
+      "traceId": "trace-reversed",
+      "spanId": "span-tool"
+    }
+  ],
+  "traces": [
+    {
+      "traceId": "trace-reversed",
+      "spanId": "span-trace",
+      "name": "reversed trace",
+      "kind": "tool",
+      "startTime": "2026-05-10T00:00:01.000Z",
+      "endTime": "2026-05-10T00:00:00.000Z",
+      "status": "ok",
+      "attributes": {}
+    }
+  ],
+  "evals": [
+    {
+      "id": "eval-invalid-score",
+      "traceId": "trace-reversed",
+      "metric": "quality",
+      "score": "high"
+    },
+    {
+      "id": "eval-invalid-threshold",
+      "traceId": "trace-reversed",
+      "metric": "groundedness",
+      "score": 0.8,
+      "threshold": "strict"
+    }
+  ]
+}
