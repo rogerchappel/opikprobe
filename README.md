@@ -49,10 +49,10 @@ See [`fixtures/pass/probe.json`](fixtures/pass/probe.json) and [`fixtures/fail/p
 ## CLI
 
 ```bash
-opikprobe inspect <fixture-path> [--output <dir-or-file>] [--format markdown|json]
+opikprobe inspect <fixture-path> [--output <dir-or-file>] [--format <markdown|json>] [--fail-on-violation <true|false>]
 ```
 
-Exit code is `1` when validation errors are found unless `--fail-on-violation=false` is set.
+`--output` (or `-o`) writes the report to a file or directory. `--format` selects `markdown` or `json`. Exit code is `1` when validation errors are found unless `--fail-on-violation` is set to `false`. Long options accept both `--option value` and `--option=value` forms.
 
 ## Library
 
