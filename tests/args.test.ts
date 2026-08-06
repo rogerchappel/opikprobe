@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parseArgs } from "../src/args.js";
+import { OpikProbeError } from "../src/errors.js";
 
 test("parse inspect defaults", () => {
   assert.deepEqual(parseArgs(["inspect", "fixtures/pass"]), {
@@ -10,6 +11,17 @@ test("parse inspect defaults", () => {
     failOnViolation: true
   });
 });
+
+for (const option of ["--output=", "--format=", "--fail-on-violation="]) {
+  test(`reject empty value for ${option}`, () => {
+    assert.throws(
+      () => parseArgs(["inspect", "fixtures/pass", option]),
+      (error: unknown) => error instanceof OpikProbeError
+        && error.code === "CLI_OPTION_VALUE_REQUIRED"
+        && error.message === `${option.slice(0, -1)} requires a value.`
+    );
+  });
+}
 
 test("parse inspect output and json format", () => {
   assert.deepEqual(parseArgs(["inspect", "fixtures/pass", "--output", "out", "--format=json", "--fail-on-violation=false"]), {

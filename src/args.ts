@@ -20,9 +20,9 @@ export function parseArgs(argv: string[]): CliOptions {
     if (arg === "--output" || arg === "-o") options.output = takeValue(rest, ++index, arg);
     else if (arg === "--format") options.format = parseFormat(takeValue(rest, ++index, arg));
     else if (arg === "--fail-on-violation") options.failOnViolation = parseBoolean(takeValue(rest, ++index, arg));
-    else if (arg.startsWith("--fail-on-violation=")) options.failOnViolation = parseBoolean(arg.split("=")[1] ?? "true");
-    else if (arg.startsWith("--format=")) options.format = parseFormat(arg.split("=")[1] ?? "");
-    else if (arg.startsWith("--output=")) options.output = arg.slice("--output=".length);
+    else if (arg.startsWith("--fail-on-violation=")) options.failOnViolation = parseBoolean(takeInlineValue(arg, "--fail-on-violation"));
+    else if (arg.startsWith("--format=")) options.format = parseFormat(takeInlineValue(arg, "--format"));
+    else if (arg.startsWith("--output=")) options.output = takeInlineValue(arg, "--output");
     else if (arg.startsWith("-")) throw new OpikProbeError(`Unknown option: ${arg}`, "CLI_UNKNOWN_OPTION");
     else if (!options.inputPath) options.inputPath = arg;
     else throw new OpikProbeError(`Unexpected argument: ${arg}`, "CLI_UNEXPECTED_ARGUMENT");
@@ -33,6 +33,12 @@ export function parseArgs(argv: string[]): CliOptions {
 
 function takeValue(values: string[], index: number, flag: string): string {
   const value = values[index];
+  if (!value) throw new OpikProbeError(`${flag} requires a value.`, "CLI_OPTION_VALUE_REQUIRED");
+  return value;
+}
+
+function takeInlineValue(arg: string, flag: string): string {
+  const value = arg.slice(`${flag}=`.length);
   if (!value) throw new OpikProbeError(`${flag} requires a value.`, "CLI_OPTION_VALUE_REQUIRED");
   return value;
 }
