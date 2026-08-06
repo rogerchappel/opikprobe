@@ -16,9 +16,39 @@ export function validateFixture(fixture: ProbeFixture): ProbeViolation[] {
     ...validateRequiredFields("traces", fixture.traces, expectations.requiredTraceFields),
     ...validateRequiredFields("evals", fixture.evals, expectations.requiredEvalFields),
     ...validateRelationships(fixture, expectations),
+    ...validateTimestampOrder(fixture),
     ...validateDurations(fixture, expectations),
     ...validateEvalScores(fixture, expectations)
   ];
+}
+
+function validateTimestampOrder(fixture: ProbeFixture): ProbeViolation[] {
+  const violations: ProbeViolation[] = [];
+  fixture.tools.forEach((tool, index) => {
+    if (new Date(tool.endedAt).valueOf() < new Date(tool.startedAt).valueOf()) {
+      violations.push({
+        code: "TOOL_TIMESTAMP_ORDER_INVALID",
+        message: `tools[${index}].endedAt must not be before startedAt.`,
+        severity: "error",
+        path: `tools[${index}].endedAt`,
+        expected: `>= ${tool.startedAt}`,
+        actual: tool.endedAt
+      });
+    }
+  });
+  fixture.traces.forEach((trace, index) => {
+    if (new Date(trace.endTime).valueOf() < new Date(trace.startTime).valueOf()) {
+      violations.push({
+        code: "TRACE_TIMESTAMP_ORDER_INVALID",
+        message: `traces[${index}].endTime must not be before startTime.`,
+        severity: "error",
+        path: `traces[${index}].endTime`,
+        expected: `>= ${trace.startTime}`,
+        actual: trace.endTime
+      });
+    }
+  });
+  return violations;
 }
 
 function validateRequiredFields(collection: string, rows: unknown[], fields: string[]): ProbeViolation[] {
@@ -62,16 +92,33 @@ function validateDurations(fixture: ProbeFixture, expectations: ProbeExpectation
   if (typeof max !== "number") return [];
   return fixture.traces.flatMap((trace, index) => {
     const duration = durationMs(trace.startTime, trace.endTime, `traces[${index}]`);
-    return duration > max ? [{ code: "TRACE_TOO_SLOW", message: `traces[${index}] duration ${duration}ms exceeds ${max}ms.`, severity: "warning" as const, path: `traces[${index}]`, expected: `<= ${max}ms`, actual: `${duration}ms` }] : [];
+    return duration >= 0 && duration > max ? [{ code: "TRACE_TOO_SLOW", message: `traces[${index}] duration ${duration}ms exceeds ${max}ms.`, severity: "warning" as const, path: `traces[${index}]`, expected: `<= ${max}ms`, actual: `${duration}ms` }] : [];
   });
 }
 
 function validateEvalScores(fixture: ProbeFixture, expectations: ProbeExpectations): ProbeViolation[] {
   const min = expectations.minEvalScore;
-  return fixture.evals.flatMap((event, index) => {
-    const threshold = typeof event.threshold === "number" ? event.threshold : min;
+  const violations: ProbeViolation[] = [];
+  const validMin = min === undefined || isFiniteNumber(min);
+  if (!validMin) {
+    violations.push({ code: "EVAL_THRESHOLD_INVALID", message: "expectations.minEvalScore must be a finite number.", severity: "error", path: "expectations.minEvalScore", expected: "finite number", actual: min });
+  }
+  fixture.evals.forEach((event, index) => {
+    if (!isFiniteNumber(event.score)) {
+      violations.push({ code: "EVAL_SCORE_INVALID", message: `evals[${index}].score must be a finite number.`, severity: "error", path: `evals[${index}].score`, expected: "finite number", actual: event.score });
+      return;
+    }
+    if (event.threshold !== undefined && !isFiniteNumber(event.threshold)) {
+      violations.push({ code: "EVAL_THRESHOLD_INVALID", message: `evals[${index}].threshold must be a finite number.`, severity: "error", path: `evals[${index}].threshold`, expected: "finite number", actual: event.threshold });
+      return;
+    }
+    const threshold = event.threshold ?? (validMin ? min : undefined);
     const passed = typeof event.passed === "boolean" ? event.passed : threshold === undefined || event.score >= threshold;
-    if (passed) return [];
-    return [{ code: "EVAL_BELOW_THRESHOLD", message: `evals[${index}] score ${event.score} is below threshold ${threshold}.`, severity: "error" as const, path: `evals[${index}].score`, expected: `>= ${threshold}`, actual: event.score }];
+    if (!passed) violations.push({ code: "EVAL_BELOW_THRESHOLD", message: `evals[${index}] score ${event.score} is below threshold ${threshold}.`, severity: "error", path: `evals[${index}].score`, expected: `>= ${threshold}`, actual: event.score });
   });
+  return violations;
+}
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
 }

@@ -20,6 +20,8 @@ opikprobe fixtures are JSON files with `version: 1`.
 - `traceId`
 - `spanId`
 
+`startedAt` and `endedAt` must be ISO timestamps, and `endedAt` must be equal to or later than `startedAt`. Zero-duration tool calls are valid.
+
 ## Trace fields
 
 - `traceId`
@@ -31,12 +33,16 @@ opikprobe fixtures are JSON files with `version: 1`.
 - `status`
 - `attributes`
 
+`startTime` and `endTime` must be ISO timestamps, and `endTime` must be equal to or later than `startTime`. Zero-duration traces are valid.
+
 ## Eval fields
 
 - `id`
 - `traceId`
 - `metric`
 - `score`
+
+`score` must be a finite JSON number. When present, an eval's `threshold` must also be a finite JSON number.
 
 ## Expectations
 
@@ -49,3 +55,5 @@ opikprobe fixtures are JSON files with `version: 1`.
 - `requireTraceForEveryTool`
 - `requireEvalForEveryTrace`
 - `maxDurationMs`
+
+`minEvalScore` must be a finite JSON number. Scores equal to their applicable threshold pass.
