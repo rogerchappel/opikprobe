@@ -54,6 +54,8 @@ opikprobe inspect <fixture-path> [--output <dir-or-file>] [--format <markdown|js
 
 `--output` (or `-o`) writes the report to a file or directory. `--format` selects `markdown` or `json`. Exit code is `1` when validation errors are found unless `--fail-on-violation` is set to `false`. Long options accept both `--option value` and `--option=value` forms.
 
+Validation findings, including malformed or out-of-order tool and trace timestamps, are emitted in the selected report format with their exact fixture paths. They do not replace the report with an internal parsing error.
+
 ## Library
 
 ```ts

@@ -1,5 +1,4 @@
 import { hasPath } from "./field-path.js";
-import { durationMs } from "./time.js";
 import type { ProbeExpectations, ProbeFixture, ProbeViolation } from "./types.js";
 
 const DEFAULT_EXPECTATIONS: Required<Pick<ProbeExpectations, "requiredTraceFields" | "requiredToolFields" | "requiredEvalFields" | "requireTraceForEveryTool">> = {
@@ -16,16 +15,44 @@ export function validateFixture(fixture: ProbeFixture): ProbeViolation[] {
     ...validateRequiredFields("traces", fixture.traces, expectations.requiredTraceFields),
     ...validateRequiredFields("evals", fixture.evals, expectations.requiredEvalFields),
     ...validateRelationships(fixture, expectations),
+    ...validateTimestamps(fixture),
     ...validateTimestampOrder(fixture),
     ...validateDurations(fixture, expectations),
     ...validateEvalScores(fixture, expectations)
   ];
 }
 
+function validateTimestamps(fixture: ProbeFixture): ProbeViolation[] {
+  return [
+    ...fixture.tools.flatMap((tool, index) => [
+      invalidTimestampViolation(`tools[${index}].startedAt`, tool.startedAt),
+      invalidTimestampViolation(`tools[${index}].endedAt`, tool.endedAt)
+    ]),
+    ...fixture.traces.flatMap((trace, index) => [
+      invalidTimestampViolation(`traces[${index}].startTime`, trace.startTime),
+      invalidTimestampViolation(`traces[${index}].endTime`, trace.endTime)
+    ])
+  ].filter((violation): violation is ProbeViolation => violation !== undefined);
+}
+
+function invalidTimestampViolation(path: string, value: string): ProbeViolation | undefined {
+  if (timestampValue(value) !== undefined) return undefined;
+  return {
+    code: "TIMESTAMP_INVALID",
+    message: `${path} must be a valid timestamp.`,
+    severity: "error",
+    path,
+    expected: "valid timestamp",
+    actual: value
+  };
+}
+
 function validateTimestampOrder(fixture: ProbeFixture): ProbeViolation[] {
   const violations: ProbeViolation[] = [];
   fixture.tools.forEach((tool, index) => {
-    if (new Date(tool.endedAt).valueOf() < new Date(tool.startedAt).valueOf()) {
+    const startedAt = timestampValue(tool.startedAt);
+    const endedAt = timestampValue(tool.endedAt);
+    if (startedAt !== undefined && endedAt !== undefined && endedAt < startedAt) {
       violations.push({
         code: "TOOL_TIMESTAMP_ORDER_INVALID",
         message: `tools[${index}].endedAt must not be before startedAt.`,
@@ -37,7 +64,9 @@ function validateTimestampOrder(fixture: ProbeFixture): ProbeViolation[] {
     }
   });
   fixture.traces.forEach((trace, index) => {
-    if (new Date(trace.endTime).valueOf() < new Date(trace.startTime).valueOf()) {
+    const startTime = timestampValue(trace.startTime);
+    const endTime = timestampValue(trace.endTime);
+    if (startTime !== undefined && endTime !== undefined && endTime < startTime) {
       violations.push({
         code: "TRACE_TIMESTAMP_ORDER_INVALID",
         message: `traces[${index}].endTime must not be before startTime.`,
@@ -91,7 +120,10 @@ function validateDurations(fixture: ProbeFixture, expectations: ProbeExpectation
   const max = expectations.maxDurationMs;
   if (typeof max !== "number") return [];
   return fixture.traces.flatMap((trace, index) => {
-    const duration = durationMs(trace.startTime, trace.endTime, `traces[${index}]`);
+    const startTime = timestampValue(trace.startTime);
+    const endTime = timestampValue(trace.endTime);
+    if (startTime === undefined || endTime === undefined) return [];
+    const duration = endTime - startTime;
     return duration >= 0 && duration > max ? [{ code: "TRACE_TOO_SLOW", message: `traces[${index}] duration ${duration}ms exceeds ${max}ms.`, severity: "warning" as const, path: `traces[${index}]`, expected: `<= ${max}ms`, actual: `${duration}ms` }] : [];
   });
 }
@@ -121,4 +153,9 @@ function validateEvalScores(fixture: ProbeFixture, expectations: ProbeExpectatio
 
 function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
+}
+
+function timestampValue(value: string): number | undefined {
+  const timestamp = new Date(value).valueOf();
+  return Number.isNaN(timestamp) ? undefined : timestamp;
 }

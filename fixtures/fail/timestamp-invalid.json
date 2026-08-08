@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "name": "invalid timestamps",
+  "tools": [
+    {
+      "id": "tool-invalid-time",
+      "name": "lookup",
+      "input": {},
+      "status": "ok",
+      "startedAt": "not-a-start-time",
+      "endedAt": "not-an-end-time",
+      "traceId": "trace-invalid-time",
+      "spanId": "span-tool"
+    }
+  ],
+  "traces": [
+    {
+      "traceId": "trace-invalid-time",
+      "spanId": "span-trace",
+      "name": "invalid trace time",
+      "kind": "tool",
+      "startTime": "not-a-start-time",
+      "endTime": "not-an-end-time",
+      "status": "ok",
+      "attributes": {}
+    }
+  ],
+  "evals": [],
+  "expectations": {
+    "maxDurationMs": 500
+  }
+}
