@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import { mkdtemp } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { test } from "node:test";
 
 const cliPath = new URL("../src/cli.js", import.meta.url);
@@ -21,6 +25,42 @@ test("empty output value exits nonzero without emitting a report", () => {
   assert.equal(result.status, 1);
   assert.equal(result.stdout, "");
   assert.equal(result.stderr, "opikprobe: --output requires a value.\n");
+});
+
+for (const [format, extension, prefix] of [["json", ".json", "{"], ["markdown", ".md", "# "]] as const) {
+  test(`writes ${format} to a matching ${extension} filename`, async () => {
+    const directory = await mkdtemp(join(tmpdir(), "opikprobe-cli-"));
+    const output = join(directory, `report${extension}`);
+
+    const result = spawnSync(process.execPath, [cliPath.pathname, "inspect", "fixtures/pass", "--format", format, "--output", output], { encoding: "utf8" });
+
+    assert.equal(result.status, 0);
+    assert.equal(result.stderr, "");
+    assert.match(readFileSync(output, "utf8"), new RegExp(`^${prefix.replace("{", "\\{")}`));
+  });
+}
+
+for (const [format, extension, expectedExtension] of [["markdown", ".json", ".md"], ["json", ".md", ".json"]] as const) {
+  test(`rejects ${format} with a mismatching ${extension} filename`, async () => {
+    const directory = await mkdtemp(join(tmpdir(), "opikprobe-cli-"));
+    const output = join(directory, `report${extension}`);
+
+    const result = spawnSync(process.execPath, [cliPath.pathname, "inspect", "fixtures/pass", "--format", format, "--output", output], { encoding: "utf8" });
+
+    assert.equal(result.status, 1);
+    assert.equal(result.stdout, "");
+    assert.equal(result.stderr, `opikprobe: Output file extension ${extension} does not match --format ${format}; use ${expectedExtension}.\n`);
+  });
+}
+
+test("writes the selected format into a generated filename for directory output", async () => {
+  const output = await mkdtemp(join(tmpdir(), "opikprobe-cli-"));
+
+  const result = spawnSync(process.execPath, [cliPath.pathname, "inspect", "fixtures/pass", "--format", "json", "--output", output], { encoding: "utf8" });
+
+  assert.equal(result.status, 0);
+  assert.equal(result.stderr, "");
+  assert.doesNotThrow(() => JSON.parse(readFileSync(join(output, "opikprobe-report.json"), "utf8")));
 });
 
 test("invalid timestamps are rendered as a structured report", () => {
