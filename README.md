@@ -52,7 +52,14 @@ See [`fixtures/pass/probe.json`](fixtures/pass/probe.json) and [`fixtures/fail/p
 opikprobe inspect <fixture-path> [--output <dir-or-file>] [--format <markdown|json>] [--fail-on-violation <true|false>]
 ```
 
-`--output` (or `-o`) writes the report to a file or directory. `--format` selects `markdown` or `json`. Exit code is `1` when validation errors are found unless `--fail-on-violation` is set to `false`. Long options accept both `--option value` and `--option=value` forms.
+`--output` (or `-o`) writes the report to a file or directory. `--format` selects `markdown` or `json`. An explicit `.md` or `.json` output filename must match the selected format; a mismatch exits with an error instead of writing mislabeled content. When `--output` is a directory, the generated filename is `opikprobe-report.md` or `opikprobe-report.json` according to `--format`.
+
+```bash
+opikprobe inspect fixtures/pass --format json --output reports/opikprobe-report.json
+opikprobe inspect fixtures/pass --format markdown --output reports
+```
+
+Exit code is `1` when validation errors are found unless `--fail-on-violation` is set to `false`. Long options accept both `--option value` and `--option=value` forms.
 
 Validation findings, including malformed or out-of-order tool and trace timestamps, are emitted in the selected report format with their exact fixture paths. They do not replace the report with an internal parsing error.
 
