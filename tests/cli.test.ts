@@ -79,3 +79,15 @@ test("invalid timestamps are rendered as a structured report", () => {
     { code: "TIMESTAMP_INVALID", path: "traces[0].startTime" }
   ]);
 });
+
+for (const [format, collection] of [["json", "tools"], ["markdown", "traces"]] as const) {
+  test(`invalid collection members preserve ${format} report output and exit semantics`, () => {
+    const result = spawnSync(process.execPath, [cliPath.pathname, "inspect", `fixtures/fail/${collection}-member-invalid.json`, `--format=${format}`], {
+      encoding: "utf8"
+    });
+
+    assert.equal(result.status, 1);
+    assert.equal(result.stderr, "");
+    assert.match(result.stdout, new RegExp(`FIXTURE_MEMBER_SHAPE_INVALID[\\s\\S]*${collection}\\[0\\]`));
+  });
+}
