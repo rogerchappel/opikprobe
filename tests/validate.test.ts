@@ -13,6 +13,21 @@ test("failing fixture reports deterministic violation codes", async () => {
   assert.deepEqual(codes, ["EVAL_BELOW_THRESHOLD", "TOOL_TRACE_MISSING", "TRACE_TOO_SLOW"]);
 });
 
+for (const [collection, invalidValue] of [["tools", null], ["traces", 42], ["evals", "not an eval"]] as const) {
+  test(`${collection} members must be JSON objects`, async () => {
+    const fixture = await loadFixture(`fixtures/fail/${collection}-member-invalid.json`);
+
+    assert.deepEqual(validateFixture(fixture), [{
+      code: "FIXTURE_MEMBER_SHAPE_INVALID",
+      message: `${collection}[0] must be a JSON object.`,
+      severity: "error",
+      path: `${collection}[0]`,
+      expected: "object",
+      actual: invalidValue
+    }]);
+  });
+}
+
 test("semantic fixture reports path-specific ordering and numeric violations", async () => {
   const fixture = await loadFixture("fixtures/fail/semantic-invalid.json");
   const violations = validateFixture(fixture);

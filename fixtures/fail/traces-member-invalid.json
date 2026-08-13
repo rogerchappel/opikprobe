@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "name": "invalid traces member",
+  "tools": [],
+  "traces": [42],
+  "evals": []
+}
