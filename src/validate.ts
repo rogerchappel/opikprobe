@@ -9,6 +9,9 @@ const DEFAULT_EXPECTATIONS: Required<Pick<ProbeExpectations, "requiredTraceField
 };
 
 export function validateFixture(fixture: ProbeFixture): ProbeViolation[] {
+  const memberShapeViolations = validateMemberShapes(fixture);
+  if (memberShapeViolations.length > 0) return memberShapeViolations;
+
   const expectations = { ...DEFAULT_EXPECTATIONS, ...fixture.expectations };
   return [
     ...validateRequiredFields("tools", fixture.tools, expectations.requiredToolFields),
@@ -20,6 +23,26 @@ export function validateFixture(fixture: ProbeFixture): ProbeViolation[] {
     ...validateDurations(fixture, expectations),
     ...validateEvalScores(fixture, expectations)
   ];
+}
+
+function validateMemberShapes(fixture: ProbeFixture): ProbeViolation[] {
+  return (["tools", "traces", "evals"] as const).flatMap((collection) =>
+    fixture[collection].flatMap((row, index) => {
+      if (isJsonObject(row)) return [];
+      return [{
+        code: "FIXTURE_MEMBER_SHAPE_INVALID",
+        message: `${collection}[${index}] must be a JSON object.`,
+        severity: "error" as const,
+        path: `${collection}[${index}]`,
+        expected: "object",
+        actual: row
+      }];
+    })
+  );
+}
+
+function isJsonObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function validateTimestamps(fixture: ProbeFixture): ProbeViolation[] {
