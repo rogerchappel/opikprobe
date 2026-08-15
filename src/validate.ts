@@ -10,10 +10,9 @@ const DEFAULT_EXPECTATIONS: Required<Pick<ProbeExpectations, "requiredTraceField
 
 export function validateFixture(fixture: ProbeFixture): ProbeViolation[] {
   const memberShapeViolations = validateMemberShapes(fixture);
-  if (memberShapeViolations.length > 0) return memberShapeViolations;
-
   const expectations = { ...DEFAULT_EXPECTATIONS, ...fixture.expectations };
   return [
+    ...memberShapeViolations,
     ...validateRequiredFields("tools", fixture.tools, expectations.requiredToolFields),
     ...validateRequiredFields("traces", fixture.traces, expectations.requiredTraceFields),
     ...validateRequiredFields("evals", fixture.evals, expectations.requiredEvalFields),
@@ -47,14 +46,14 @@ function isJsonObject(value: unknown): value is Record<string, unknown> {
 
 function validateTimestamps(fixture: ProbeFixture): ProbeViolation[] {
   return [
-    ...fixture.tools.flatMap((tool, index) => [
-      invalidTimestampViolation(`tools[${index}].startedAt`, tool.startedAt),
-      invalidTimestampViolation(`tools[${index}].endedAt`, tool.endedAt)
-    ]),
-    ...fixture.traces.flatMap((trace, index) => [
-      invalidTimestampViolation(`traces[${index}].startTime`, trace.startTime),
-      invalidTimestampViolation(`traces[${index}].endTime`, trace.endTime)
-    ])
+    ...fixture.tools.flatMap((tool, index) => isJsonObject(tool) ? [
+        invalidTimestampViolation(`tools[${index}].startedAt`, tool.startedAt),
+        invalidTimestampViolation(`tools[${index}].endedAt`, tool.endedAt)
+      ] : []),
+    ...fixture.traces.flatMap((trace, index) => isJsonObject(trace) ? [
+        invalidTimestampViolation(`traces[${index}].startTime`, trace.startTime),
+        invalidTimestampViolation(`traces[${index}].endTime`, trace.endTime)
+      ] : [])
   ].filter((violation): violation is ProbeViolation => violation !== undefined);
 }
 
@@ -73,6 +72,7 @@ function invalidTimestampViolation(path: string, value: string): ProbeViolation 
 function validateTimestampOrder(fixture: ProbeFixture): ProbeViolation[] {
   const violations: ProbeViolation[] = [];
   fixture.tools.forEach((tool, index) => {
+    if (!isJsonObject(tool)) return;
     const startedAt = timestampValue(tool.startedAt);
     const endedAt = timestampValue(tool.endedAt);
     if (startedAt !== undefined && endedAt !== undefined && endedAt < startedAt) {
@@ -87,6 +87,7 @@ function validateTimestampOrder(fixture: ProbeFixture): ProbeViolation[] {
     }
   });
   fixture.traces.forEach((trace, index) => {
+    if (!isJsonObject(trace)) return;
     const startTime = timestampValue(trace.startTime);
     const endTime = timestampValue(trace.endTime);
     if (startTime !== undefined && endTime !== undefined && endTime < startTime) {
@@ -105,7 +106,7 @@ function validateTimestampOrder(fixture: ProbeFixture): ProbeViolation[] {
 
 function validateRequiredFields(collection: string, rows: unknown[], fields: string[]): ProbeViolation[] {
   return rows.flatMap((row, index) =>
-    fields
+    isJsonObject(row) ? fields
       .filter((field) => !hasPath(row, field))
       .map((field) => ({
         code: "REQUIRED_FIELD_MISSING",
@@ -114,16 +115,17 @@ function validateRequiredFields(collection: string, rows: unknown[], fields: str
         path: `${collection}[${index}].${field}`,
         expected: "present",
         actual: "missing"
-      }))
+      })) : []
   );
 }
 
 function validateRelationships(fixture: ProbeFixture, expectations: ProbeExpectations): ProbeViolation[] {
-  const traces = new Set(fixture.traces.map((trace) => trace.traceId));
-  const evalTraces = new Set(fixture.evals.map((event) => event.traceId));
+  const traces = new Set(fixture.traces.filter(isJsonObject).map((trace) => trace.traceId));
+  const evalTraces = new Set(fixture.evals.filter(isJsonObject).map((event) => event.traceId));
   const violations: ProbeViolation[] = [];
   if (expectations.requireTraceForEveryTool !== false) {
     fixture.tools.forEach((tool, index) => {
+      if (!isJsonObject(tool)) return;
       if (!traces.has(tool.traceId)) {
         violations.push({ code: "TOOL_TRACE_MISSING", message: `tools[${index}] references missing trace ${tool.traceId}.`, severity: "error", path: `tools[${index}].traceId`, expected: "known traceId", actual: tool.traceId });
       }
@@ -131,6 +133,7 @@ function validateRelationships(fixture: ProbeFixture, expectations: ProbeExpecta
   }
   if (expectations.requireEvalForEveryTrace === true) {
     fixture.traces.forEach((trace, index) => {
+      if (!isJsonObject(trace)) return;
       if (!evalTraces.has(trace.traceId)) {
         violations.push({ code: "TRACE_EVAL_MISSING", message: `traces[${index}] has no eval event.`, severity: "warning", path: `traces[${index}].traceId`, expected: "eval traceId", actual: trace.traceId });
       }
@@ -143,6 +146,7 @@ function validateDurations(fixture: ProbeFixture, expectations: ProbeExpectation
   const max = expectations.maxDurationMs;
   if (typeof max !== "number") return [];
   return fixture.traces.flatMap((trace, index) => {
+    if (!isJsonObject(trace)) return [];
     const startTime = timestampValue(trace.startTime);
     const endTime = timestampValue(trace.endTime);
     if (startTime === undefined || endTime === undefined) return [];
@@ -159,6 +163,7 @@ function validateEvalScores(fixture: ProbeFixture, expectations: ProbeExpectatio
     violations.push({ code: "EVAL_THRESHOLD_INVALID", message: "expectations.minEvalScore must be a finite number.", severity: "error", path: "expectations.minEvalScore", expected: "finite number", actual: min });
   }
   fixture.evals.forEach((event, index) => {
+    if (!isJsonObject(event)) return;
     if (!isFiniteNumber(event.score)) {
       violations.push({ code: "EVAL_SCORE_INVALID", message: `evals[${index}].score must be a finite number.`, severity: "error", path: `evals[${index}].score`, expected: "finite number", actual: event.score });
       return;
