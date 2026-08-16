@@ -91,3 +91,22 @@ for (const [format, collection] of [["json", "tools"], ["markdown", "traces"]] a
     assert.match(result.stdout, new RegExp(`FIXTURE_MEMBER_SHAPE_INVALID[\\s\\S]*${collection}\\[0\\]`));
   });
 }
+
+for (const format of ["json", "markdown"] as const) {
+  test(`malformed members do not suppress independent findings in ${format} reports`, () => {
+    const result = spawnSync(process.execPath, [cliPath.pathname, "inspect", "fixtures/fail/aggregate-invalid.json", `--format=${format}`], {
+      encoding: "utf8"
+    });
+
+    assert.equal(result.status, 1);
+    assert.equal(result.stderr, "");
+    for (const [code, path] of [
+      ["FIXTURE_MEMBER_SHAPE_INVALID", "tools[0]"],
+      ["TIMESTAMP_INVALID", "traces[0].startTime"],
+      ["TIMESTAMP_INVALID", "traces[0].endTime"]
+    ] as const) {
+      assert.match(result.stdout, new RegExp(code));
+      assert.match(result.stdout, new RegExp(path.replaceAll("[", "\\[").replaceAll("]", "\\]")));
+    }
+  });
+}

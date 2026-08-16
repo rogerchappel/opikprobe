@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "name": "aggregate-invalid",
+  "tools": [null],
+  "traces": [
+    {
+      "traceId": "trace-aggregate",
+      "spanId": "span-aggregate",
+      "name": "aggregate validation",
+      "kind": "tool",
+      "startTime": "not-a-date",
+      "endTime": "also-not-a-date",
+      "status": "error",
+      "attributes": {}
+    }
+  ],
+  "evals": []
+}

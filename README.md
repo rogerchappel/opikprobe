@@ -61,7 +61,7 @@ opikprobe inspect fixtures/pass --format markdown --output reports
 
 Exit code is `1` when validation errors are found unless `--fail-on-violation` is set to `false`. Long options accept both `--option value` and `--option=value` forms.
 
-Validation findings, including non-object `tools`, `traces`, or `evals` members and malformed or out-of-order timestamps, are emitted in the selected report format with their exact fixture paths. They do not replace the report with an internal parsing error.
+Validation findings, including non-object `tools`, `traces`, or `evals` members and malformed or out-of-order timestamps, are emitted in the selected report format with their exact fixture paths. Reports aggregate independent findings from valid object-shaped members even when the same fixture also contains malformed collection members. These findings do not replace the report with an internal parsing error.
 
 ## Library
 
