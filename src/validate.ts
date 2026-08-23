@@ -10,9 +10,10 @@ const DEFAULT_EXPECTATIONS: Required<Pick<ProbeExpectations, "requiredTraceField
 
 export function validateFixture(fixture: ProbeFixture): ProbeViolation[] {
   const memberShapeViolations = validateMemberShapes(fixture);
-  const expectations = { ...DEFAULT_EXPECTATIONS, ...fixture.expectations };
+  const { expectations, violations: expectationViolations } = validateExpectations(fixture.expectations);
   return [
     ...memberShapeViolations,
+    ...expectationViolations,
     ...validateRequiredFields("tools", fixture.tools, expectations.requiredToolFields),
     ...validateRequiredFields("traces", fixture.traces, expectations.requiredTraceFields),
     ...validateRequiredFields("evals", fixture.evals, expectations.requiredEvalFields),
@@ -22,6 +23,59 @@ export function validateFixture(fixture: ProbeFixture): ProbeViolation[] {
     ...validateDurations(fixture, expectations),
     ...validateEvalScores(fixture, expectations)
   ];
+}
+
+type NormalizedExpectations = ProbeExpectations & typeof DEFAULT_EXPECTATIONS;
+
+function validateExpectations(value: unknown): { expectations: NormalizedExpectations; violations: ProbeViolation[] } {
+  const expectations: NormalizedExpectations = { ...DEFAULT_EXPECTATIONS };
+  const violations: ProbeViolation[] = [];
+  if (value === undefined) return { expectations, violations };
+  if (!isJsonObject(value)) {
+    return { expectations, violations: [expectationViolation("expectations", "object", value)] };
+  }
+
+  for (const field of ["requiredToolFields", "requiredTraceFields", "requiredEvalFields"] as const) {
+    const candidate = value[field];
+    if (candidate === undefined) continue;
+    if (!Array.isArray(candidate)) {
+      violations.push(expectationViolation(`expectations.${field}`, "array of field-path strings", candidate));
+      continue;
+    }
+    const validFields: string[] = [];
+    candidate.forEach((item, index) => {
+      if (typeof item === "string" && isFieldPath(item)) validFields.push(item);
+      else violations.push(expectationViolation(`expectations.${field}[${index}]`, "non-empty field-path string", item));
+    });
+    if (validFields.length === candidate.length) expectations[field] = validFields;
+  }
+
+  for (const field of ["requireTraceForEveryTool", "requireEvalForEveryTrace"] as const) {
+    const candidate = value[field];
+    if (candidate === undefined) continue;
+    if (typeof candidate === "boolean") expectations[field] = candidate;
+    else violations.push(expectationViolation(`expectations.${field}`, "boolean", candidate));
+  }
+
+  const minEvalScore = value.minEvalScore;
+  if (minEvalScore !== undefined) {
+    if (isFiniteNumber(minEvalScore) && minEvalScore >= 0 && minEvalScore <= 1) expectations.minEvalScore = minEvalScore;
+    else violations.push(expectationViolation("expectations.minEvalScore", "finite number from 0 to 1", minEvalScore));
+  }
+  const maxDurationMs = value.maxDurationMs;
+  if (maxDurationMs !== undefined) {
+    if (isFiniteNumber(maxDurationMs) && maxDurationMs >= 0) expectations.maxDurationMs = maxDurationMs;
+    else violations.push(expectationViolation("expectations.maxDurationMs", "finite number greater than or equal to 0", maxDurationMs));
+  }
+  return { expectations, violations };
+}
+
+function expectationViolation(path: string, expected: string, actual: unknown): ProbeViolation {
+  return { code: "EXPECTATION_INVALID", message: `${path} must be ${expected}.`, severity: "error", path, expected, actual };
+}
+
+function isFieldPath(value: string): boolean {
+  return /^[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)*$/.test(value);
 }
 
 function validateMemberShapes(fixture: ProbeFixture): ProbeViolation[] {

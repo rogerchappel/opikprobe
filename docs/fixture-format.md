@@ -56,4 +56,8 @@ opikprobe fixtures are JSON files with `version: 1`.
 - `requireEvalForEveryTrace`
 - `maxDurationMs`
 
-`minEvalScore` must be a finite JSON number. Scores equal to their applicable threshold pass.
+The three `required*Fields` values must be arrays of non-empty field-path strings. Paths use dot-separated object keys (for example, `metadata.model`). The two `require*` flags must be JSON booleans.
+
+`minEvalScore` must be a finite JSON number from `0` to `1`, inclusive. Scores equal to their applicable threshold pass. `maxDurationMs` must be a finite, non-negative JSON number; zero is valid.
+
+Malformed expectation values are reported as `EXPECTATION_INVALID` violations at the exact property or array-member path. They are included in both JSON and Markdown reports and follow the normal `--fail-on-violation` exit behavior instead of terminating inspection with an unstructured runtime error.

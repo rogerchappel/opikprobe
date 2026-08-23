@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "name": "invalid expectations",
+  "tools": [],
+  "traces": [],
+  "evals": [],
+  "expectations": {
+    "requiredToolFields": "id",
+    "requiredTraceFields": ["traceId", 42, "metadata..model"],
+    "requiredEvalFields": [""],
+    "requireTraceForEveryTool": "yes",
+    "requireEvalForEveryTrace": 1,
+    "minEvalScore": -0.1,
+    "maxDurationMs": -1
+  }
+}
