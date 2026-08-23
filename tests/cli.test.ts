@@ -110,3 +110,13 @@ for (const format of ["json", "markdown"] as const) {
     }
   });
 }
+
+for (const format of ["json", "markdown"] as const) {
+  test(`malformed expectations retain structured ${format} output and exit semantics`, () => {
+    const result = spawnSync(process.execPath, [cliPath.pathname, "inspect", "fixtures/fail/expectations-invalid.json", `--format=${format}`], { encoding: "utf8" });
+    assert.equal(result.status, 1);
+    assert.equal(result.stderr, "");
+    assert.match(result.stdout, /EXPECTATION_INVALID/);
+    assert.match(result.stdout, /expectations\.requiredTraceFields\[1\]/);
+  });
+}

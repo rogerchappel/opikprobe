@@ -64,7 +64,7 @@ test("non-finite eval numbers are rejected without coercion", async () => {
   assert.deepEqual(
     validateFixture(fixture).map(({ code, path }) => ({ code, path })),
     [
-      { code: "EVAL_THRESHOLD_INVALID", path: "expectations.minEvalScore" },
+      { code: "EXPECTATION_INVALID", path: "expectations.minEvalScore" },
       { code: "EVAL_SCORE_INVALID", path: "evals[0].score" },
       { code: "EVAL_THRESHOLD_INVALID", path: "evals[1].threshold" }
     ]
@@ -79,4 +79,29 @@ test("equal timestamps and numeric boundary scores remain valid", async () => {
   fixture.evals[0]!.threshold = 0;
   fixture.expectations!.minEvalScore = 0;
   assert.deepEqual(validateFixture(fixture), []);
+});
+
+test("malformed expectations produce deterministic path-specific violations", async () => {
+  const fixture = await loadFixture("fixtures/fail/expectations-invalid.json");
+  assert.deepEqual(
+    validateFixture(fixture).map(({ code, path }) => ({ code, path })),
+    [
+      { code: "EXPECTATION_INVALID", path: "expectations.requiredToolFields" },
+      { code: "EXPECTATION_INVALID", path: "expectations.requiredTraceFields[1]" },
+      { code: "EXPECTATION_INVALID", path: "expectations.requiredTraceFields[2]" },
+      { code: "EXPECTATION_INVALID", path: "expectations.requiredEvalFields[0]" },
+      { code: "EXPECTATION_INVALID", path: "expectations.requireTraceForEveryTool" },
+      { code: "EXPECTATION_INVALID", path: "expectations.requireEvalForEveryTrace" },
+      { code: "EXPECTATION_INVALID", path: "expectations.minEvalScore" },
+      { code: "EXPECTATION_INVALID", path: "expectations.maxDurationMs" }
+    ]
+  );
+});
+
+test("non-object expectations and non-finite numeric values never throw", async () => {
+  const fixture = await loadFixture("fixtures/pass/probe.json");
+  fixture.expectations = [] as never;
+  assert.deepEqual(validateFixture(fixture).map(({ path }) => path), ["expectations"]);
+  fixture.expectations = { minEvalScore: Number.NaN, maxDurationMs: Number.POSITIVE_INFINITY };
+  assert.deepEqual(validateFixture(fixture).map(({ path }) => path), ["expectations.minEvalScore", "expectations.maxDurationMs"]);
 });
