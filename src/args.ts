@@ -33,7 +33,9 @@ export function parseArgs(argv: string[]): CliOptions {
 
 function takeValue(values: string[], index: number, flag: string): string {
   const value = values[index];
-  if (!value) throw new OpikProbeError(`${flag} requires a value.`, "CLI_OPTION_VALUE_REQUIRED");
+  if (!value || value.startsWith("-")) {
+    throw new OpikProbeError(`${flag} requires a value.`, "CLI_OPTION_VALUE_REQUIRED");
+  }
   return value;
 }
 
