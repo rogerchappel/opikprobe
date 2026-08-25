@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { mkdtemp } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -26,6 +26,24 @@ test("empty output value exits nonzero without emitting a report", () => {
   assert.equal(result.stdout, "");
   assert.equal(result.stderr, "opikprobe: --output requires a value.\n");
 });
+
+for (const option of ["--output", "-o", "--format", "--fail-on-violation"]) {
+  test(`${option} rejects a following option token without emitting a report`, async () => {
+    const directory = await mkdtemp(join(tmpdir(), "opikprobe-cli-"));
+    const output = join(directory, "report.json");
+    const followingOption = option === "--output" || option === "-o" ? "--format=json" : `--output=${output}`;
+
+    const result = spawnSync(process.execPath, [cliPath.pathname, "inspect", "fixtures/pass", option, followingOption], {
+      encoding: "utf8"
+    });
+
+    assert.equal(result.status, 1);
+    assert.equal(result.stdout, "");
+    assert.equal(result.stderr, `opikprobe: ${option} requires a value.\n`);
+    assert.equal(existsSync(output), false);
+    assert.equal(existsSync(join(process.cwd(), "--format=json")), false);
+  });
+}
 
 for (const [format, extension, prefix] of [["json", ".json", "{"], ["markdown", ".md", "# "]] as const) {
   test(`writes ${format} to a matching ${extension} filename`, async () => {
