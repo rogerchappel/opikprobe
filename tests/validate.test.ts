@@ -81,6 +81,44 @@ test("equal timestamps and numeric boundary scores remain valid", async () => {
   assert.deepEqual(validateFixture(fixture), []);
 });
 
+test("numeric thresholds cannot be overridden by an explicit pass", async () => {
+  const fixture = await loadFixture("fixtures/pass/probe.json");
+  fixture.expectations!.minEvalScore = 0.9;
+  delete fixture.evals[0]!.threshold;
+  fixture.evals[0]!.score = 0.1;
+  fixture.evals[0]!.passed = true;
+
+  assert.deepEqual(validateFixture(fixture).map(({ code, expected, actual }) => ({ code, expected, actual })), [
+    { code: "EVAL_BELOW_THRESHOLD", expected: ">= 0.9", actual: 0.1 }
+  ]);
+});
+
+test("an explicit failure without a threshold has a meaningful violation", async () => {
+  const fixture = await loadFixture("fixtures/pass/probe.json");
+  delete fixture.expectations!.minEvalScore;
+  delete fixture.evals[0]!.threshold;
+  fixture.evals[0]!.passed = false;
+
+  assert.deepEqual(validateFixture(fixture).map(({ code, message, expected, actual }) => ({ code, message, expected, actual })), [
+    {
+      code: "EVAL_MARKED_FAILED",
+      message: "evals[0] is explicitly marked as failed.",
+      expected: "passed: true",
+      actual: false
+    }
+  ]);
+});
+
+test("an eval threshold takes precedence over the fixture minimum", async () => {
+  const fixture = await loadFixture("fixtures/pass/probe.json");
+  fixture.expectations!.minEvalScore = 0.9;
+  fixture.evals[0]!.threshold = 0.4;
+  fixture.evals[0]!.score = 0.5;
+  fixture.evals[0]!.passed = true;
+
+  assert.deepEqual(validateFixture(fixture), []);
+});
+
 test("malformed expectations produce deterministic path-specific violations", async () => {
   const fixture = await loadFixture("fixtures/fail/expectations-invalid.json");
   assert.deepEqual(

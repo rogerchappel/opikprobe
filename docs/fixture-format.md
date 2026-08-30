@@ -42,7 +42,7 @@ opikprobe fixtures are JSON files with `version: 1`.
 - `metric`
 - `score`
 
-`score` must be a finite JSON number. When present, an eval's `threshold` must also be a finite JSON number.
+`score` must be a finite JSON number. When present, an eval's `threshold` must also be a finite JSON number. An eval may include a boolean `passed` field.
 
 ## Expectations
 
@@ -58,6 +58,6 @@ opikprobe fixtures are JSON files with `version: 1`.
 
 The three `required*Fields` values must be arrays of non-empty field-path strings. Paths use dot-separated object keys (for example, `metadata.model`). The two `require*` flags must be JSON booleans.
 
-`minEvalScore` must be a finite JSON number from `0` to `1`, inclusive. Scores equal to their applicable threshold pass. `maxDurationMs` must be a finite, non-negative JSON number; zero is valid.
+`minEvalScore` must be a finite JSON number from `0` to `1`, inclusive. An eval's own `threshold` takes precedence over `minEvalScore`. Scores equal to their applicable threshold pass, and scores below it fail even when `passed` is `true`. When the score satisfies its threshold (or no numeric threshold applies), `passed: false` still records an explicit failure. `maxDurationMs` must be a finite, non-negative JSON number; zero is valid.
 
 Malformed expectation values are reported as `EXPECTATION_INVALID` violations at the exact property or array-member path. They are included in both JSON and Markdown reports and follow the normal `--fail-on-violation` exit behavior instead of terminating inspection with an unstructured runtime error.

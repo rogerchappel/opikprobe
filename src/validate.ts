@@ -227,8 +227,11 @@ function validateEvalScores(fixture: ProbeFixture, expectations: ProbeExpectatio
       return;
     }
     const threshold = event.threshold ?? (validMin ? min : undefined);
-    const passed = typeof event.passed === "boolean" ? event.passed : threshold === undefined || event.score >= threshold;
-    if (!passed) violations.push({ code: "EVAL_BELOW_THRESHOLD", message: `evals[${index}] score ${event.score} is below threshold ${threshold}.`, severity: "error", path: `evals[${index}].score`, expected: `>= ${threshold}`, actual: event.score });
+    if (threshold !== undefined && event.score < threshold) {
+      violations.push({ code: "EVAL_BELOW_THRESHOLD", message: `evals[${index}] score ${event.score} is below threshold ${threshold}.`, severity: "error", path: `evals[${index}].score`, expected: `>= ${threshold}`, actual: event.score });
+    } else if (event.passed === false) {
+      violations.push({ code: "EVAL_MARKED_FAILED", message: `evals[${index}] is explicitly marked as failed.`, severity: "error", path: `evals[${index}].passed`, expected: "passed: true", actual: false });
+    }
   });
   return violations;
 }
