@@ -1,4 +1,5 @@
 import { hasPath } from "./field-path.js";
+import { timestampValue } from "./time.js";
 import type { ProbeExpectations, ProbeFixture, ProbeViolation } from "./types.js";
 
 const DEFAULT_EXPECTATIONS: Required<Pick<ProbeExpectations, "requiredTraceFields" | "requiredToolFields" | "requiredEvalFields" | "requireTraceForEveryTool">> = {
@@ -238,9 +239,4 @@ function validateEvalScores(fixture: ProbeFixture, expectations: ProbeExpectatio
 
 function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
-}
-
-function timestampValue(value: string): number | undefined {
-  const timestamp = new Date(value).valueOf();
-  return Number.isNaN(timestamp) ? undefined : timestamp;
 }
