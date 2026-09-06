@@ -46,6 +46,8 @@ A fixture contains:
 
 See [`fixtures/pass/probe.json`](fixtures/pass/probe.json) and [`fixtures/fail/probe.json`](fixtures/fail/probe.json).
 
+Tool `startedAt`/`endedAt` and trace `startTime`/`endTime` values must be complete RFC3339 timestamps: `YYYY-MM-DDTHH:mm:ss[.fraction](Z|±HH:mm)`. A date, time, and UTC marker or numeric offset are all required. For example, `2026-05-10T00:00:00.050Z` and `2026-05-10T10:30:00+10:30` are valid; locale-dependent dates such as `01/02/2020`, date-only values, and timestamps without a timezone are rejected.
+
 ## CLI
 
 ```bash
@@ -61,7 +63,7 @@ opikprobe inspect fixtures/pass --format markdown --output reports
 
 Exit code is `1` when validation errors are found unless `--fail-on-violation` is set to `false`. Long options accept both `--option value` and `--option=value` forms.
 
-Validation findings, including non-object `tools`, `traces`, or `evals` members and malformed or out-of-order timestamps, are emitted in the selected report format with their exact fixture paths. Reports aggregate independent findings from valid object-shaped members even when the same fixture also contains malformed collection members. These findings do not replace the report with an internal parsing error.
+Validation findings, including non-object `tools`, `traces`, or `evals` members and invalid or out-of-order RFC3339 timestamps, are emitted in the selected report format with their exact fixture paths. Reports aggregate independent findings from valid object-shaped members even when the same fixture also contains malformed collection members. These findings do not replace the report with an internal parsing error.
 
 ## Library
 
