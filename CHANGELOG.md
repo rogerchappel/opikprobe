@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added release-readiness validation for package metadata, CI placeholder cleanup, and package smoke coverage.
+- Require complete RFC3339 timestamps for tool and trace fixture events.
 
 ## 0.1.0
 
