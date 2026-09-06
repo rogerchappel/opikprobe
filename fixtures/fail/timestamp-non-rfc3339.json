@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "name": "parseable non-RFC3339 timestamps",
+  "tools": [
+    {
+      "id": "tool-non-rfc3339-time",
+      "name": "lookup",
+      "input": {},
+      "status": "ok",
+      "startedAt": "01/02/2020",
+      "endedAt": "2020-01-01",
+      "traceId": "trace-non-rfc3339-time",
+      "spanId": "span-tool"
+    }
+  ],
+  "traces": [
+    {
+      "traceId": "trace-non-rfc3339-time",
+      "spanId": "span-trace",
+      "name": "non-RFC3339 trace time",
+      "kind": "tool",
+      "startTime": "2020-01-01 00:00:00",
+      "endTime": "2020-01-01T00:00:00",
+      "status": "ok",
+      "attributes": {}
+    }
+  ],
+  "evals": []
+}

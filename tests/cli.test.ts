@@ -98,6 +98,23 @@ test("invalid timestamps are rendered as a structured report", () => {
   ]);
 });
 
+test("parseable non-RFC3339 timestamps are rendered as a structured report", () => {
+  const result = spawnSync(process.execPath, [cliPath.pathname, "inspect", "fixtures/fail/timestamp-non-rfc3339.json", "--format=json"], {
+    encoding: "utf8"
+  });
+
+  assert.equal(result.status, 1);
+  assert.equal(result.stderr, "");
+  const report = JSON.parse(result.stdout) as { ok: boolean; violations: Array<{ code: string; path: string }> };
+  assert.equal(report.ok, false);
+  assert.deepEqual(report.violations.map(({ code, path }) => ({ code, path })), [
+    { code: "TIMESTAMP_INVALID", path: "tools[0].endedAt" },
+    { code: "TIMESTAMP_INVALID", path: "tools[0].startedAt" },
+    { code: "TIMESTAMP_INVALID", path: "traces[0].endTime" },
+    { code: "TIMESTAMP_INVALID", path: "traces[0].startTime" }
+  ]);
+});
+
 for (const [format, collection] of [["json", "tools"], ["markdown", "traces"]] as const) {
   test(`invalid collection members preserve ${format} report output and exit semantics`, () => {
     const result = spawnSync(process.execPath, [cliPath.pathname, "inspect", `fixtures/fail/${collection}-member-invalid.json`, `--format=${format}`], {

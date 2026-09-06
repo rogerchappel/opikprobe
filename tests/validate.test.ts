@@ -55,6 +55,19 @@ test("malformed timestamps produce path-specific violations without throwing", a
   );
 });
 
+test("parseable non-RFC3339 timestamps produce path-specific violations", async () => {
+  const fixture = await loadFixture("fixtures/fail/timestamp-non-rfc3339.json");
+  assert.deepEqual(
+    validateFixture(fixture).map(({ code, path }) => ({ code, path })),
+    [
+      { code: "TIMESTAMP_INVALID", path: "tools[0].startedAt" },
+      { code: "TIMESTAMP_INVALID", path: "tools[0].endedAt" },
+      { code: "TIMESTAMP_INVALID", path: "traces[0].startTime" },
+      { code: "TIMESTAMP_INVALID", path: "traces[0].endTime" }
+    ]
+  );
+});
+
 test("non-finite eval numbers are rejected without coercion", async () => {
   const fixture = await loadFixture("fixtures/pass/probe.json");
   const evalEvent = fixture.evals[0]!;
