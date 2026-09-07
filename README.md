@@ -103,8 +103,11 @@ npm run check
 npm test
 npm run build
 npm run smoke
+npm run package:smoke
 bash scripts/validate.sh
 ```
+
+`npm run package:smoke` builds and packs the exact publishable tarball, installs it into a disposable consumer project without checkout dependencies, runs the installed `opikprobe --help` and a representative fixture inspection, and imports the public library export. `npm run release:check` includes this extracted-tarball consumer verification.
 
 ## Release readiness
 
