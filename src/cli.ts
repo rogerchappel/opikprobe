@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import { realpathSync } from "node:fs";
+import { pathToFileURL } from "node:url";
 import { parseArgs } from "./args.js";
 import { asErrorMessage } from "./errors.js";
 import { HELP } from "./help.js";
@@ -29,6 +31,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+const invokedPath = process.argv[1];
+if (invokedPath && import.meta.url === pathToFileURL(realpathSync(invokedPath)).href) {
   process.exitCode = await main();
 }
